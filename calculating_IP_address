@@ -1,0 +1,60 @@
+class IPrange: # Defining a class to calculate our peremeters
+    def __init__(self, address, CIDR): # Initialization and Appending the IP and CIDR
+        self.address = address
+        self.CIDR = CIDR
+        self.addrlist = self.address.split(".")
+    def  __repr__(self): # Starting the programe for the cleint interface
+        print("program started wellcom!!!\n Calculating the IP Range of %s/%s" %(self.address, self.CIDR))
+    
+    def MASK(self): # Calculating the Mask address
+        x1 =0
+        int(x1)
+        mask = [x1, x1, x1, x1]
+        for i in range(int(self.CIDR)):
+            mask[i//8] = mask[i//8] + (1 << (7 - i % 8))
+        return mask
+    def NETWORK(self): # Calculating the Network ID
+        network = []
+        for i in range(4):
+            network.append(int(self.addrlist[i]) & int(self.MASK()[i]))
+        return network
+    def WILDCARD(self): # Calculating the Wildcard  adrress (Used with routing protocols like OSPF)
+        wildcard = self.MASK()
+        for i in range(4):
+            wildcard[i] = ~ wildcard[i] & 0xFF # Using the not logical curcite also and logical curcite to culculate the reversed IP mask
+        return wildcard
+    def BROADCAST(self): # Calculating the BROADCAST adrress
+        broadcast = []
+        net = self.NETWORK()
+        wild = self.WILDCARD()
+        for i in range(4):
+            broadcast.append(int(net[i]) | int(wild[i]))
+        return broadcast
+    def FIRST_ADDRESS(self): # Calculating the first address
+        first_from_network = self.NETWORK()
+        first_from_network[-1] = int(first_from_network[-1]) + 1
+                
+        return first_from_network
+    def LAST_ADDRESS(self): # Calculating the last address
+        last_from_broadcast = self.BROADCAST()
+        last_from_broadcast[-1] = last_from_broadcast[-1] & 0xFE
+        return last_from_broadcast
+    
+    
+def IPCalc(IP_mask): # Identifying the function to initiate the program
+    if "/" in IP_mask:
+        address, cidr = IP_mask.split("/")
+        obj = IPrange(address, cidr)
+        obj.__repr__()
+        print("Network ID: ", ".".join([str(octet) for octet in obj.NETWORK()]))
+        print("Net_Mask: ", ".".join([str(octet) for octet in obj.MASK()]))
+        print("WildCard: ", ".".join([str(octet) for octet in obj.WILDCARD()]))
+        print("Broadcast: ", ".".join([str(octet) for octet in obj.BROADCAST()]))
+        print("First IP Address: ", ".".join([str(octet) for octet in obj.FIRST_ADDRESS()]))
+        print("Last IP Address: ", ".".join([str(octet) for octet in obj.LAST_ADDRESS()]))
+    else:
+        print("Please specify a CIDR for your address!!!")
+
+        
+ip = input("enter the ip address you need to calculate!!!")
+IPCalc(str(ip)) # summoning the function
